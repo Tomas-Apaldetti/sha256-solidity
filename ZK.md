@@ -51,3 +51,8 @@ En zk-SNARKs, esquemas de compromiso de polinomios pueden ser usados con el fin 
 
 
 ## Aplicaciones
+Las aplicaciones de pruebas de conocimiento nulo, y como tal zk-SNARKS son multiples; permiten aumentar la privacidad de una operacion que utiliza datos sensibles. Obviamente esta privacidad viene a un costo, en este caso, rapidez al momento de comprobar la operacion. Algunos ejemplos de sus aplicaciones son:
+- **Blockchains y cripto-monedas**: En el caso de las cripto-monedas, permiten realizar transaccion sin revelar quienes son las partes involucradas o la transaccion. [ZCash](https://z.cash/learn/what-are-zk-snarks/) es un ejemplo (y unos de los primeros) de una cripto-moneda que utiliza zk-SNARKs como base de su privacidad. 
+- **Blockchains de nivel 2**: Permiten crear blockchains dependientes de una block-chain original (como puede ser Ethereum) donde se realizan transacciones costosas. Una vez se tiene una cantidad de transacciones en la blockchain de nivel 2, estas se juntan y se realiza como una transaccion en la blockchain original. Esto permite flexibilizar (en escalado, velocidad, etc.) la blockchain original a un costo mucho menor.
+- **Blockchains de tamaño constante**: Permite crear una blockchain de tamaño constante. Esto permite que los nodos y la red en general tenga una huella mucho mas pequeña (nodos menos poderosos, menos consumo energetico, etc.). En vez de agregar un bloque cada vez, extendiendo asi la red, se guarda la prueba de que la transaccion es correcta. [Coda](https://codaprotocol.com/docs/)
+- **Privacidad en aplicaciones / auditorias** zk-SNARKs pueden ser usado para que en aplicaciones donde se use informacion sensible, como datos personales o financieros, sean auditables sin tener que revelar esta informacion.  
