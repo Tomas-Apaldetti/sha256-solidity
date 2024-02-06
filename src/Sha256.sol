@@ -347,3 +347,16 @@ function tp_sha256(bytes memory input) pure returns (bytes32) {
 
     return curr_hash;
 }
+
+function hex_digest(bytes memory _bytes) pure returns (string memory){
+    bytes memory alphabet = "0123456789abcdef";
+    bytes memory str = new bytes(_bytes.length * 2);
+
+    for (uint256 i = 0; i < _bytes.length; i++) {
+        str[i * 2] = alphabet[uint8(_bytes[i] & 0xF0)];
+        str[i * 2 + 1] = alphabet[uint8(_bytes[i] & 0x0F)];
+    }
+
+    return string(str);
+    
+}

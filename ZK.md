@@ -39,15 +39,24 @@ Existen multiples diferentes esquemas, los cuales se diferencias por, entre otro
 - **Escalabilidad**: Los diferentes esquemas pueden escalar de manera diferente frente al polinomio que se busca el compromiso: constante, lineal u otros. Esto hace que la huella en almacenamiento sea diferente entre los diferenes esquemas. 
 - **Eficiencia**: Algunos esquemas pueden comprobarse mas rapidamente que otros para el mismo polinomio.
 - **Fuerza criptografica**: Que tan resistente es a ataques que busquen conocer la informacion oculta.
+
 Cabe destacar que estas propiedades suelen ser exclusivas una otra a la otra. Es decir, si, por ejemplo, se quiere mas eficiencia, puede ser que se obtenga un esquema mas 'debil' criptograficamente. 
 
 ## (ZK-)SNARKs
-**(Zero-Knowledge) Succinct Non-Interactive Argument of Knowledge** o Prueba Sucinta No Interactiva de Conocimiento (Nulo), donde sucinta se refiere a que la prueba de conocimiento nulo es mas pequeña que el _testigo_ y puede ser verificada eficientemente. Un protocol (zk-)SNARK es descrito por tres algoritmos:
-- **_Gen_** es el setup del algoritmo, generando una _string_ **_CRS_** (_Common Reference String_) usada en el proceso de prueba y una key de verificacion **_VRS_**. Este _setup_ es generalmente hecho por una parte confiable.
-- **_Prove_** es el proceso que toma como input **_CRS_**, el _statement_ **_U_** y un _testigo_ **_W_** y da como resultado la prueba **_Pi_**.
-- **_Verifiy_** es el proceso que toma como input **_VRS_**, el _statement_ **_U_** y la prueba **_Pi_** y retorna si es aceptada o no.
+**(Zero-Knowledge) Succinct Non-Interactive Argument of Knowledge** o Argumento Sucinto No Interactiva de Conocimiento (Nulo), donde:
+- **Sucinta** se refiere a que la prueba de conocimiento nulo es mas pequeña que el _testigo_ y puede ser verificada eficientemente.
+- **No Interactiva** se refiere a que el unico mensaje que se intercambia entre el _prover_ y el _verifier_ es la prueba.
+- **Conocimiento Nulo** se refiere a que se prueba que se posee cierto conocimiento, pero que el _verifier_ no sabe cual el es este.
+- **Argumento** se refiere a que existe una (pequeña) probabilidad de que se convenza al _verifier_ con un argumento no correcto. 
 
-En zk-SNARKs, esquemas de compromiso de polinomios pueden ser usados con el fin de que sea _sucinto_ y de _conocimiento nulo_, aunque no es la unica estrategia. 
+Refiere a la construccion de una prueba que, de manera probabilistica, prueba que tiene cierta informacion, sin necesariamente revelarla o dar ningun dato de donde esta se pueda derivar.
+
+
+1. **_Gen_** es el setup del algoritmo, generando una _string_ **_CRS_** (_Common Reference String_) usada en el proceso de prueba y una key de verificacion **_VRS_**. Este _setup_ es generalmente hecho por una parte confiable dado que genera **residuo toxico** en forma de la **_simulation trapdoor_**. Existen maneras de distribuir el _setup_ de forma que se necesiten muchas partes y con que una sola descarte su **residuo toxico** ya no se puede reconstruir la **_simulation trapdoor_**
+
+1. **_Prove_** es el proceso que toma como input **_CRS_**, el _statement_ **_U_** y un _testigo_ **_W_** y da como resultado la prueba **_Pi_**.
+
+1. **_Verifiy_** es el proceso que toma como input **_VRS_**, el _statement_ **_U_** y la prueba **_Pi_** y retorna si es aceptada o no.
 
 
 ## Aplicaciones
