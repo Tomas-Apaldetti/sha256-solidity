@@ -29,7 +29,7 @@ function uint32_to_bytes4(uint256 x) pure returns (bytes4 b) {
 /**
  * Sum multiple 32bit-words as if they were number in mod 2^256, then reinterpret the result as a new word
  */
-function sum_w32(bytes4[] memory words) pure returns (bytes4) {
+function sum_w32(bytes4[2] memory words) pure returns (bytes4) {
     uint32 acc = 0;
     for (uint32 i = 0; i < words.length; i++) {
         unchecked {
@@ -39,6 +39,49 @@ function sum_w32(bytes4[] memory words) pure returns (bytes4) {
 
     return uint32_to_bytes4(acc);
 }
+
+/**
+ * Sum multiple 32bit-words as if they were number in mod 2^256, then reinterpret the result as a new word
+ */
+function sum_w32(bytes4[3] memory words) pure returns (bytes4) {
+    uint32 acc = 0;
+    for (uint32 i = 0; i < words.length; i++) {
+        unchecked {
+            acc += uint32(words[i]);
+        }
+    }
+
+    return uint32_to_bytes4(acc);
+}
+
+/**
+ * Sum multiple 32bit-words as if they were number in mod 2^256, then reinterpret the result as a new word
+ */
+function sum_w32(bytes4[4] memory words) pure returns (bytes4) {
+    uint32 acc = 0;
+    for (uint32 i = 0; i < words.length; i++) {
+        unchecked {
+            acc += uint32(words[i]);
+        }
+    }
+
+    return uint32_to_bytes4(acc);
+}
+
+/**
+ * Sum multiple 32bit-words as if they were number in mod 2^256, then reinterpret the result as a new word
+ */
+function sum_w32(bytes4[5] memory words) pure returns (bytes4) {
+    uint32 acc = 0;
+    for (uint32 i = 0; i < words.length; i++) {
+        unchecked {
+            acc += uint32(words[i]);
+        }
+    }
+
+    return uint32_to_bytes4(acc);
+}
+
 
 /**
  * Function to be used while preparing the schedule for SHA-256
@@ -52,15 +95,47 @@ function mix(bytes4[] memory w, uint32 t) pure returns (bytes4) {
         rotate_right_w32(w[t - 2], 19) ^
         shift_right_w32(w[t - 2], 10);
 
-    bytes4[4] memory a = [s0, w[t - 7], s1, w[t - 16]];
-    bytes4[] memory b = new bytes4[](4);
-
-    for (uint i = 0; i < a.length; i++) {
-        b[i] = a[i];
-    }
-    return sum_w32(b);
+    return sum_w32([s0, w[t - 7], s1, w[t - 16]]);
+}
+struct PartialState{
+    bytes4 a;
+    bytes4 b;
+    bytes4 c;
+    bytes4 d;
+    bytes4 e;
+    bytes4 f;
+    bytes4 g;
+    bytes4 h;
 }
 
+function _sha_round(bytes4[] memory w, PartialState memory p, bytes4[64] memory k) pure returns (PartialState memory){
+    for(uint8 i = 0; i < 64; i++){
+        bytes4 t1 = sum_w32([
+            p.h, 
+            rotate_right_w32(p.e, 6) ^ rotate_right_w32(p.e, 11) ^ rotate_right_w32(p.e, 25), 
+            ch(p.e, p.f, p.g), 
+            w[i], 
+            k[i]
+        ]);
+        bytes4 a = sum_w32([
+            t1, 
+            rotate_right_w32(p.a, 2) ^ rotate_right_w32(p.a, 13) ^ rotate_right_w32(p.a, 22), 
+            maj(p.a, p.b, p.c)
+        ]);
+
+        p.h = p.g;
+        p.g = p.f;
+        p.f = p.e;
+        p.e = sum_w32([p.d, t1]);
+        p.d = p.c;
+        p.c = p.b;
+        p.b = p.a;
+        p.a = a;
+    }
+
+
+    return p;
+}
 /**
  * Perform a round in the SHA-256 schedule based on the previous state of the hash.
  * Returns the next state of the hash
@@ -137,70 +212,31 @@ function sha_round(
         bytes4(0xc67178f2)
     ];
 
-    bytes4 a = current_state[0];
-    bytes4 b = current_state[1];
-    bytes4 c = current_state[2];
-    bytes4 d = current_state[3];
-    bytes4 e = current_state[4];
-    bytes4 f = current_state[5];
-    bytes4 g = current_state[6];
-    bytes4 h = current_state[7];
-
-    for (uint8 i = 0; i < 64; i++) {
-        bytes4 _ch = ch(e, f, g);
-        bytes4 _maj = maj(a, b, c);
-        bytes4 _s0 = rotate_right_w32(a, 2) ^
-            rotate_right_w32(a, 13) ^
-            rotate_right_w32(a, 22);
-        bytes4 _s1 = rotate_right_w32(e, 6) ^
-            rotate_right_w32(e, 11) ^
-            rotate_right_w32(e, 25);
-
-        bytes4[5] memory __t1 = [h, _s1, _ch, w[i], constants[i]];
-        bytes4[] memory _t1 = new bytes4[](5);
-
-        for (uint j = 0; j < a.length; j++) {
-            _t1[j] = __t1[j];
-        }
-
-        bytes4 t1 = sum_w32(_t1);
-
-        h = g;
-        g = f;
-        f = e;
-
-        bytes4[2] memory __e = [d, t1];
-        bytes4[] memory _e = new bytes4[](2);
-
-        for (uint j = 0; j < a.length; j++) {
-            _e[j] = __e[j];
-        }
-        e = sum_w32(_e);
-
-        d = c;
-        c = b;
-        b = a;
-
-        bytes4[3] memory __a = [t1, _s0, _maj];
-        bytes4[] memory _a = new bytes4[](3);
-
-        for (uint j = 0; j < a.length; j++) {
-            _a[j] = __a[j];
-        }
-
-        a = sum_w32(_a);
-    }
+    PartialState memory p = _sha_round(
+        w, 
+        PartialState({
+            a: current_state[0],
+            b: current_state[1],
+            c: current_state[2],
+            d: current_state[3],
+            e: current_state[4],
+            f: current_state[5],
+            g: current_state[6],
+            h: current_state[7]
+        }),
+        constants
+    );
 
     bytes32 result;
 
-    result |= bytes32(a) >> 0;
-    result |= bytes32(b) >> 32;
-    result |= bytes32(c) >> 64;
-    result |= bytes32(d) >> 96;
-    result |= bytes32(e) >> 128;
-    result |= bytes32(f) >> 160;
-    result |= bytes32(g) >> 192;
-    result |= bytes32(h) >> 224;
+    result |= bytes32(p.a) >> 0;
+    result |= bytes32(p.b) >> 32;
+    result |= bytes32(p.c) >> 64;
+    result |= bytes32(p.d) >> 96;
+    result |= bytes32(p.e) >> 128;
+    result |= bytes32(p.f) >> 160;
+    result |= bytes32(p.g) >> 192;
+    result |= bytes32(p.h) >> 224;
 
     return result;
 }
@@ -339,7 +375,11 @@ function do_chunk(
 
 function tp_sha256(bytes memory input) pure returns (bytes32) {
     bytes32 curr_hash = 0x6a09e667bb67ae853c6ef372a54ff53a510e527f9b05688c1f83d9ab5be0cd19;
-
+    if(input.length == 0){
+        bytes memory empty_chunk = new bytes(64);
+        empty_chunk[0] = 0x80;
+        curr_hash = do_64bytes_chunk(empty_chunk, curr_hash);
+    }
     for (uint i = 0; i < input.length; i += 64) {
         uint offset = i + 64 > input.length ? input.length : i + 64;
         curr_hash = do_chunk(input, i, offset, curr_hash, input.length);
@@ -353,7 +393,7 @@ function hex_digest(bytes memory _bytes) pure returns (string memory){
     bytes memory str = new bytes(_bytes.length * 2);
 
     for (uint256 i = 0; i < _bytes.length; i++) {
-        str[i * 2] = alphabet[uint8(_bytes[i] & 0xF0)];
+        str[i * 2] = alphabet[uint8((_bytes[i] >> 4) & 0x0F)];
         str[i * 2 + 1] = alphabet[uint8(_bytes[i] & 0x0F)];
     }
 
